@@ -9,14 +9,17 @@ export default function TodoList() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
+    // Au montage: on charge les todos de l’utilisateur connecté
     fetchTodos();
   }, []);
 
   const fetchTodos = async () => {
     try {
+      // Récupère l’utilisateur courant
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Charge les todos de l’utilisateur, plus récentes en premier
       const { data, error } = await supabase
         .from('todos')
         .select('*')
@@ -38,6 +41,7 @@ export default function TodoList() {
 
     setAdding(true);
     try {
+      // Vérifie l’utilisateur et insère une nouvelle tâche liée à son id
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -49,6 +53,7 @@ export default function TodoList() {
 
       if (error) throw error;
       if (data) {
+        // Ajoute la nouvelle tâche au début de la liste
         setTodos([data, ...todos]);
         setNewTodo('');
       }
@@ -61,12 +66,14 @@ export default function TodoList() {
 
   const toggleTodo = async (id: string, completed: boolean) => {
     try {
+      // Inverse l’état d’achèvement et met à jour "updated_at"
       const { error } = await supabase
         .from('todos')
         .update({ completed: !completed, updated_at: new Date().toISOString() })
         .eq('id', id);
 
       if (error) throw error;
+      // Met à jour la liste localement pour garder l’UI réactive
       setTodos(todos.map(todo =>
         todo.id === id ? { ...todo, completed: !completed } : todo
       ));
@@ -77,6 +84,7 @@ export default function TodoList() {
 
   const deleteTodo = async (id: string) => {
     try {
+      // Supprime côté base puis côté état local
       const { error } = await supabase
         .from('todos')
         .delete()
@@ -90,6 +98,7 @@ export default function TodoList() {
   };
 
   const handleSignOut = async () => {
+    // Déconnecte l’utilisateur courant
     await supabase.auth.signOut();
   };
 
@@ -98,6 +107,7 @@ export default function TodoList() {
 
   if (loading) {
     return (
+      // Écran de chargement centré
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-slate-600">Chargement...</div>
       </div>
@@ -105,12 +115,16 @@ export default function TodoList() {
   }
 
   return (
+    // Conteneur principal avec padding global
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
+        {/* Carte Todo */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* En-tête: dégradé, titre, actions, stats */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-3xl font-bold">Mes Tâches</h1>
+              {/* Bouton déconnexion */}
               <button
                 onClick={handleSignOut}
                 className="p-2 hover:bg-white/20 rounded-lg transition"
@@ -119,6 +133,7 @@ export default function TodoList() {
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
+            {/* Statistiques rapides */}
             <div className="flex gap-6 text-sm">
               <div className="flex items-center gap-2">
                 <Circle className="w-4 h-4" />
@@ -131,7 +146,9 @@ export default function TodoList() {
             </div>
           </div>
 
+          {/* Corps: saisie + liste */}
           <div className="p-6">
+            {/* Saisie nouvelle tâche */}
             <form onSubmit={addTodo} className="mb-6">
               <div className="flex gap-2">
                 <input
@@ -142,6 +159,7 @@ export default function TodoList() {
                   className="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   disabled={adding}
                 />
+                {/* Bouton ajouter */}
                 <button
                   type="submit"
                   disabled={adding || !newTodo.trim()}
@@ -153,18 +171,22 @@ export default function TodoList() {
               </div>
             </form>
 
+            {/* Liste des tâches */}
             <div className="space-y-2">
               {todos.length === 0 ? (
+                // État vide
                 <div className="text-center py-12 text-slate-400">
                   <p className="text-lg">Aucune tâche pour le moment</p>
                   <p className="text-sm mt-2">Commencez par en ajouter une ci-dessus</p>
                 </div>
               ) : (
                 todos.map((todo) => (
+                  // Item: conteneur hover, actions à droite
                   <div
                     key={todo.id}
                     className="group flex items-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition"
                   >
+                    {/* Bouton bascule terminé/en cours */}
                     <button
                       onClick={() => toggleTodo(todo.id, todo.completed)}
                       className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
@@ -176,6 +198,7 @@ export default function TodoList() {
                       {todo.completed && <Check className="w-4 h-4 text-white" />}
                     </button>
 
+                    {/* Titre de la tâche (line-through si terminée) */}
                     <span
                       className={`flex-1 text-slate-800 transition ${
                         todo.completed ? 'line-through text-slate-400' : ''
@@ -184,6 +207,7 @@ export default function TodoList() {
                       {todo.title}
                     </span>
 
+                    {/* Bouton suppression (visible au survol) */}
                     <button
                       onClick={() => deleteTodo(todo.id)}
                       className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
