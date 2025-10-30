@@ -17,10 +17,16 @@ export default function TodoList() {
     try {
       // Récupère l’utilisateur courant
       const { data: { user } } = await supabase.auth.getUser();
+      // Si aucun utilisateur n'est actuellement connecté, on quitte la fonction sans charger les todos
       if (!user) return;
 
       // Charge les todos de l’utilisateur, plus récentes en premier
       const { data, error } = await supabase
+        // Cette séquence effectue une requête auprès de la table "todos" dans la base de données :
+        // - .from('todos') : cible la table "todos".
+        // - .select('*') : sélectionne toutes les colonnes pour chaque todo.
+        // - .eq('user_id', user.id) : ne garde que les todos de l’utilisateur actuellement connecté (filtre sur user_id).
+        // - .order('created_at', { ascending: false }) : trie les todos par date de création, de la plus récente à la plus ancienne.
         .from('todos')
         .select('*')
         .eq('user_id', user.id)
