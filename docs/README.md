@@ -9,7 +9,7 @@ Ce dossier contient la documentation fonctionnelle et technique de l’applicati
 ## Ajouter des images
 1. Placez vos fichiers image (PNG/JPG/SVG/GIF) dans `docs/assets/`.
 2. Référencez-les dans la doc avec un chemin relatif.
-
+a
 Exemples:
 
 Image en markdown simple:
