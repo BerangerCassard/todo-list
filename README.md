@@ -1,10 +1,3 @@
-todo-list
-
-Documentation
-
-- La documentation détaillée est disponible dans `docs/README.md`.
-- Les images associées doivent être placées dans `docs/assets/` et référencées avec des chemins relatifs depuis la doc.
-
 Configuration
 
 1. Créez un fichier `.env.local` à la racine du projet avec:
